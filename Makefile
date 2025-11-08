@@ -1,4 +1,4 @@
-include .env
+-include .env
 
 DB_DRIVER=postgres
 DB_STRING="host=${POSTGRES_HOST} port=${POSTGRES_PORT} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} sslmode=disable"
@@ -33,7 +33,7 @@ coverage-html:
 validate: lint security test
 
 run:
-	go run cmd/api/v1/main.go
+	go run cmd/main.go
 
 db:
 	docker-compose up -d db
