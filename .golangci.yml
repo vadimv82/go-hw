@@ -1,0 +1,22 @@
+run:
+  # Note: golangci-lint version check may fail with Go 1.25 until a newer version is released
+  # This config helps but the binary version check happens before config is loaded
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+linters-settings:
+  govet:
+    check-shadowing: true
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+

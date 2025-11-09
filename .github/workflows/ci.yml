@@ -81,6 +81,8 @@ jobs:
         with:
           version: latest
           args: --timeout=5m
+        # Note: May fail with Go 1.25 until golangci-lint releases a version built with Go 1.25+
+        # The version check happens before config loads, so this is expected until a newer release
         continue-on-error: true  # Show warnings but don't fail the build
 
       - name: Run gosec security scanner
