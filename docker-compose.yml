@@ -11,5 +11,23 @@ services:
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
 
+  db-test:
+    image: postgres:latest
+    container_name: database_test
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres_test
+    volumes:
+      - postgres_test_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
 volumes:
   postgres_data:
+  postgres_test_data:
