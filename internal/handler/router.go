@@ -11,10 +11,10 @@ func New(router *gin.Engine, userController *controller.UserController) *gin.Eng
 	{
 		userGroup := v1.Group("/users")
 		{
-			userGroup.GET("/", userController.GetAllUsers)
+			userGroup.GET("", userController.GetAllUsers)
 			userGroup.GET("/username/:username", userController.GetUserByUsername)
 			userGroup.GET("/id/:id", userController.GetUserByID)
-			userGroup.POST("/", userController.CreateUser)
+			userGroup.POST("", userController.CreateUser)
 			userGroup.PATCH("/:uuid", userController.UpdateUser)
 			userGroup.DELETE("/:uuid", userController.DeleteUser)
 		}
