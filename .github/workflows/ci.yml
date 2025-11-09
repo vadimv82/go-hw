@@ -77,14 +77,14 @@ jobs:
       - name: Run go vet
         run: go vet ./...
 
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v4
-        with:
-          version: latest
-          args: --timeout=5m
-        # Note: May fail with Go 1.25 until golangci-lint releases a version built with Go 1.25+
-        # The version check happens before config loads, so this is expected until a newer release
-        continue-on-error: true  # Show warnings but don't fail the build
+      # golangci-lint disabled: v1.64.8 built with Go 1.24, incompatible with Go 1.25
+      # Re-enable when golangci-lint releases a version built with Go 1.25+
+      # - name: Run golangci-lint
+      #   uses: golangci/golangci-lint-action@v4
+      #   with:
+      #     version: latest
+      #     args: --timeout=5m
+      #   continue-on-error: true
 
       - name: Run gosec security scanner
         uses: securego/gosec@master
