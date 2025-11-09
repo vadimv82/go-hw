@@ -1,2 +1,4 @@
 .env
+test.env
 postgres_data
+test.out
