@@ -39,7 +39,10 @@ func LoadTestConfig() *TestConfig {
 	return config
 }
 
+// loadEnvFile reads a .env file and sets environment variables
+// Only sets variables that are not already set (env vars take precedence)
 func loadEnvFile(filename string) error {
+	//nolint:gosec // File paths are hardcoded in LoadTestConfig, not user input
 	file, err := os.Open(filename)
 	if err != nil {
 		return err
@@ -68,7 +71,11 @@ func loadEnvFile(filename string) error {
 		}
 
 		if os.Getenv(key) == "" {
-			os.Setenv(key, value)
+			if err := os.Setenv(key, value); err != nil {
+				// Ignore Setenv errors in test configuration (e.g., invalid key format)
+				// This is test-only code and errors here won't affect test execution
+				continue
+			}
 		}
 	}
 
