@@ -4,12 +4,14 @@ services:
     container_name: database
     ports:
       - "5432:5432"
-    env_file:
-      - .env
+    # Environment variables can be set via .env file (if it exists) or environment
+    # Defaults are provided for all variables, so .env is optional
     environment:
-      POSTGRES_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
   db-test:
     image: postgres:latest
@@ -27,6 +29,19 @@ services:
       interval: 2s
       timeout: 5s
       retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cruder-app
+    ports:
+      - "8080:8080"
+    environment:
+      POSTGRES_DSN: "host=db port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"
+    depends_on:
+      - db
+    restart: unless-stopped
 
 volumes:
   postgres_data:

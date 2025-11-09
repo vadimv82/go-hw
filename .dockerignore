@@ -1,0 +1,41 @@
+# Git files
+.git
+.gitignore
+
+# IDE files
+.idea
+.vscode
+*.swp
+*.swo
+
+# Test files
+test.env
+test.out
+*.test
+
+# Documentation
+README.md
+TASK.md
+*.md
+
+# Docker files
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Build artifacts
+bin/
+dist/
+
+# Database data
+postgres_data/
+postgres_test_data/
+
+# Terraform
+platform/
+*.tfstate
+*.tfstate.*
+
+# Test config examples (keep go.mod, go.sum)
+test.env.example
+

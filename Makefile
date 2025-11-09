@@ -8,6 +8,14 @@ else
 	GOOSE = goose
 endif
 
+# Check for docker-compose (v1) or docker compose (v2)
+DOCKER_COMPOSE := $(shell command -v docker-compose 2> /dev/null)
+ifdef DOCKER_COMPOSE
+	DOCKER_COMPOSE_CMD = docker-compose
+else
+	DOCKER_COMPOSE_CMD = docker compose
+endif
+
 DB_DRIVER=postgres
 DB_STRING="host=${POSTGRES_HOST} port=${POSTGRES_PORT} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} sslmode=disable"
 
@@ -44,17 +52,17 @@ run:
 	go run cmd/main.go
 
 db:
-	docker compose up -d db
+	$(DOCKER_COMPOSE_CMD) up -d db
 
 db-test:
 	@echo "Starting test database on port 5433 (production DB uses 5432)..."
-	docker compose up -d db-test
+	$(DOCKER_COMPOSE_CMD) up -d db-test
 
 db-test-clean:
 	@echo "Cleaning and restarting test database..."
-	docker compose down db-test
+	$(DOCKER_COMPOSE_CMD) down db-test
 	docker volume rm go-hw_postgres_test_data 2>/dev/null || true
-	docker compose up -d db-test
+	$(DOCKER_COMPOSE_CMD) up -d db-test
 
 migrate-test-up: db-test
 	@echo "Waiting for database to be ready..."
@@ -85,21 +93,21 @@ test-handler:
 
 test-integration: db-test migrate-test-up test-handler
 	@echo "Cleaning up test database..."
-	-docker compose down db-test
+	-$(DOCKER_COMPOSE_CMD) down db-test
 	@echo "Integration tests completed"
 
 test-integration-keep: db-test migrate-test-up test-handler
 	@echo "Integration tests completed (database kept running for debugging)"
 
 up:
-	docker compose up --build
+	$(DOCKER_COMPOSE_CMD) up --build
 
 down:
-	docker compose down
+	$(DOCKER_COMPOSE_CMD) down
 
 restart:
-	docker compose down
-	docker compose up --build
+	$(DOCKER_COMPOSE_CMD) down
+	$(DOCKER_COMPOSE_CMD) up --build
 
 create-migration:
 	@read -p "Enter migration name: " name; \
