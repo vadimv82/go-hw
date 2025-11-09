@@ -42,7 +42,7 @@ func LoadTestConfig() *TestConfig {
 // loadEnvFile reads a .env file and sets environment variables
 // Only sets variables that are not already set (env vars take precedence)
 func loadEnvFile(filename string) error {
-	//nolint:gosec // File paths are hardcoded in LoadTestConfig, not user input
+	// #nosec G304 -- File paths are hardcoded in LoadTestConfig, not user input
 	file, err := os.Open(filename)
 	if err != nil {
 		return err
