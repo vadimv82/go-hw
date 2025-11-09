@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:  # Allows manual triggering from GitHub Actions tab
+
+jobs:
+  verify:
+    name: Code Verification
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Wait for PostgreSQL
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Run database migrations
+        run: |
+          go run github.com/pressly/goose/v3/cmd/goose@latest -dir ./migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=postgres_test sslmode=disable" up
+        env:
+          TEST_POSTGRES_HOST: localhost
+          TEST_POSTGRES_PORT: 5432
+          TEST_POSTGRES_USER: postgres
+          TEST_POSTGRES_PASSWORD: postgres
+          TEST_POSTGRES_DB: postgres_test
+
+      - name: Run go fmt (check formatting)
+        run: |
+          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+            echo "Code is not formatted. Run 'go fmt ./...'"
+            gofmt -s -d .
+            exit 1
+          fi
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: latest
+          args: --timeout=5m
+
+      - name: Run gosec security scanner
+        uses: securego/gosec@master
+        with:
+          args: '-exclude-dir=bin/database ./...'
+
+      - name: Run tests
+        run: go test -v -coverprofile=coverage.out ./...
+        env:
+          TEST_POSTGRES_HOST: localhost
+          TEST_POSTGRES_PORT: 5432
+          TEST_POSTGRES_USER: postgres
+          TEST_POSTGRES_PASSWORD: postgres
+          TEST_POSTGRES_DB: postgres_test
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: ./coverage.out
+          fail_ci_if_error: false
+
