@@ -39,6 +39,7 @@ services:
       - "8080:8080"
     environment:
       POSTGRES_DSN: "host=db port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"
+      API_KEY: ${API_KEY:-test-api-key-12345}
     depends_on:
       - db
     restart: unless-stopped
