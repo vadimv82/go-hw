@@ -70,10 +70,12 @@ func JSONLoggingMiddleware() gin.HandlerFunc {
 
 		logJSON, err := json.Marshal(logEntry)
 		if err != nil {
-			os.Stderr.WriteString("Incoming request: " + err.Error() + "\n")
+			// If JSON marshaling fails, log error and continue (logging failure shouldn't break requests)
+			_, _ = os.Stderr.WriteString("Incoming request: " + err.Error() + "\n")
 			return
 		}
 
-		os.Stderr.WriteString(string(logJSON) + "\n")
+		// Ignore write errors - logging failure shouldn't break request handling
+		_, _ = os.Stderr.WriteString(string(logJSON) + "\n")
 	}
 }
