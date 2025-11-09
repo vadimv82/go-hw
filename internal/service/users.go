@@ -3,6 +3,7 @@ package service
 import (
 	"cruder/internal/model"
 	"cruder/internal/repository"
+	"errors"
 )
 
 type UserService interface {
@@ -24,9 +25,21 @@ func (s *userService) GetAll() ([]model.User, error) {
 }
 
 func (s *userService) GetByUsername(username string) (*model.User, error) {
-	return s.repo.GetByUsername(username)
+	user, err := s.repo.GetByUsername(username)
+	return s.ensureUserExists(user, err)
 }
 
 func (s *userService) GetByID(id int64) (*model.User, error) {
-	return s.repo.GetByID(id)
+	user, err := s.repo.GetByID(id)
+	return s.ensureUserExists(user, err)
+}
+
+func (s *userService) ensureUserExists(user *model.User, err error) (*model.User, error) {
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("user is not found")
+	}
+	return user, nil
 }
